@@ -1,0 +1,19 @@
+[package]
+authors = ["Leonardo Escuer <leoescuer@protonmail.com>"]
+edition = "2018"
+name = "workers"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# serde = "1.0.117"
+# serde_json = "1.0.59"
+wasm-bindgen = "0.2.68"
+
+[profile.release]
+lto = true
+opt-level = 's'
