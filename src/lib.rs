@@ -4,8 +4,6 @@ use wasm_bindgen::JsValue;
 
 use rust_decimal::prelude::*;
 
-use rust_decimal_macros::*;
-
 #[derive(Serialize, Deserialize)]
 pub struct DataRecv {
     pub precio: f32,
@@ -33,8 +31,11 @@ pub fn mort_calculator(info: &JsValue) -> JsValue {
 
     let interes = Decimal::from_f32(data.interes).unwrap();
 
-    let inter = interes / Decimal::from_f32(100.00).unwrap();
-    let mut base = Decimal::from_f32(data.prestamo).unwrap();
+    // let inter = interes / Decimal::from_f32(100.00).unwrap();
+    let balance = Decimal::from_f32(data.prestamo).unwrap();
+
+    //esto se usa para calcular la aco
+    let mut base = balance.clone();
     let anos = Decimal::from_f32(data.anos).unwrap();
 
     //decimal de 12
@@ -42,18 +43,20 @@ pub fn mort_calculator(info: &JsValue) -> JsValue {
     //decimal de 1
     let DEC1: Decimal = Decimal::from_f32(1.00).unwrap();
 
+    let CERO: Decimal = Decimal::from_f32(0.00).unwrap();
+
     // cuanto paga de interes
-    let pagoint = base * (&inter / DEC12);
+    let pagoint = &base * (&interes / &DEC12);
 
     //amortbase
-    let amort_base = DEC1 + &inter / DEC12;
+    let amort_base = &DEC1 + &interes / &DEC12;
     //la potencia para calcular
-    let potencia = DEC12 * &anos;
+    let potencia = &DEC12 * &anos;
     use num;
 
     let amort_pago = num::pow(amort_base, potencia.to_usize().unwrap());
 
-    let pago_mensual = (&pagoint * &amort_pago) / (&amort_pago - DEC1);
+    let pago_mensual = (&pagoint * &amort_pago) / (&amort_pago - &DEC1);
 
     //conto de meses de transasction
     let mut mes: u16 = 0;
@@ -66,8 +69,11 @@ pub fn mort_calculator(info: &JsValue) -> JsValue {
 
     let mut total: Vec<DataSend> = Vec::new();
 
-    while base >= Decimal::from_f32(0.00).unwrap() {
-        let pagoint = &base * (&inter / DEC12);
+    while base >= CERO {
+        if base.round_dp(2) == CERO || total_pago_amor.round_dp(2) == balance.round_dp(2) {
+            return JsValue::from_serde(&total).unwrap();
+        }
+        let pagoint = &base * (&interes / &DEC12);
         pago_tot_int = &pago_tot_int + &pagoint;
 
         let menos_blc = &pago_mensual - pagoint;
@@ -79,14 +85,14 @@ pub fn mort_calculator(info: &JsValue) -> JsValue {
         mes = mes + 1;
         id = id + 1;
         let obj: DataSend = DataSend {
-            balance: base.clone(),
+            balance: balance,
             mes: mes.clone(),
-            pago_mensual: pago_mensual.clone(),
-            pago_interes: pagoint.clone(),
-            pago_amor: menos_blc.clone(),
-            intereses_totales: pago_tot_int.clone(),
-            pago_total_amor: total_pago_amor.clone(),
-            gasto_total: total_pago_amor.clone() + pago_tot_int.clone(),
+            pago_mensual: pago_mensual.round_dp(2).clone(),
+            pago_interes: pagoint.round_dp(2).clone(),
+            pago_amor: menos_blc.round_dp(2).clone(),
+            intereses_totales: pago_tot_int.round_dp(2).clone(),
+            pago_total_amor: total_pago_amor.round_dp(2).clone(),
+            gasto_total: total_pago_amor.round_dp(2).clone() + pago_tot_int.round_dp(2).clone(),
             id: id.clone(),
         };
         total.push(obj);
