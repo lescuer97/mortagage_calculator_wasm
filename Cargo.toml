@@ -1,7 +1,7 @@
 [package]
 authors = ["Leonardo Escuer <leoescuer@protonmail.com>"]
 edition = "2018"
-name = "workers"
+name = "mortagage_calculator_wasm"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,10 +11,10 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 
-num = "0.3"
-rust_decimal = "1.8"
+num = "0.3.1"
+rust_decimal = "1.10.1"
 serde = {version = "1.0", features = ["derive"]}
-tinyvec = "1.0.1"
+tinyvec = "1.1.0"
 wasm-bindgen = {version = "0.2", features = ["serde-serialize"]}
 
 [profile.release]
